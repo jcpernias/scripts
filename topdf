@@ -1,0 +1,58 @@
+#! /usr/bin/env python3
+
+import argparse
+import subprocess
+import os.path
+
+
+def fixpath(path):
+    "Perform tilde expansion and normalize path"
+    p = os.path.expanduser(path)
+    return os.path.realpath(p)
+
+
+def pipe(from_args, to_args):
+    p1 = subprocess.Popen(from_args, stdout=subprocess.PIPE)
+    p2 = subprocess.Popen(to_args, stdin=p1.stdout)
+
+    p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
+    p2.wait()
+
+
+a2ps_args = [
+    'a2ps',
+    '-o-',
+    '-E',
+    '-g',
+    '--line-numbers=5',
+    '--medium=A4',
+    '--landscape',
+    '-f7',
+    '--rows=1',
+    '--columns=2',
+    '-b',
+    '--footer',
+    '--left-footer',
+    '--right-footer'
+]
+
+
+ps2pdf_args = [
+    'ps2pdf',
+    '-sPAPERSIZE=a4',
+    '-'
+]
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('input', help='input file(s)', nargs='+')
+    parser.add_argument('output', help='output file')
+
+    args = parser.parse_args()
+    input_file = args.input
+    output_file = args.output
+
+    p1_args = a2ps_args + [fixpath(i) for i in input_file]
+    p2_args = ps2pdf_args + [fixpath(output_file)]
+
+    pipe(p1_args, p2_args)
