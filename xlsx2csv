@@ -1,0 +1,77 @@
+#!/usr/bin/env Rscript
+
+## Cargar paquetes necesarios
+required_packages <- c("optparse", "readxl")
+
+load_pkg <- function(lib) {
+    suppressPackageStartupMessages(
+        library(lib, character.only = TRUE, logical.return = TRUE,
+                warn.conflicts = FALSE, quietly = TRUE))
+}
+
+loaded_packages <- vapply(required_packages, load_pkg, logical(1))
+
+# Comprobar que los paquetes necesarios están instalados
+if (!all(loaded_packages)) {
+    missing <- required_packages[which(!loaded_packages)]
+    cat("Faltan los siguientes paquetes necesarios:\n")
+    cat(paste0(" - ", missing), sep = "\n")
+    cat("\nPor favor, instálalos ejecutando:\n")
+    cat("install.packages(c(",
+        paste(sprintf('"%s"', missing), collapse = ", "),
+        "))\n")
+    quit(status = 1)
+}
+
+
+# Definir opciones de línea de comandos
+option_list <- list(
+    make_option(c("-o", "--output"),
+                type = "character",
+                default = NULL,
+                help = "Archivo CSV de salida [opcional]",
+                metavar = "character"),
+    make_option(c("-s", "--sheet"),
+                type = "character",
+                default = NULL,
+                help="Nombre de la hoja a convertir [opcional]",
+                metavar = "character"))
+
+# Parsear argumentos
+opt_parser <-
+    OptionParser(usage = "uso: %prog [opciones] archivo.xlsx",
+                 option_list = option_list)
+opt <- parse_args(opt_parser, positional_arguments = TRUE)
+
+# Verificar que se ha proporcionado un archivo de entrada
+if (length(opt$args) < 1) {
+    print_help(opt_parser)
+    stop("Debes proporcionar un archivo .xlsx de entrada.", call.=FALSE)
+}
+
+input_file <- opt$args[1]
+
+# Verificar extensión
+if (!grepl("\\.xlsx?$", input_file, ignore.case = TRUE)) {
+    stop("El archivo de entrada debe tener extensión .xlsx o .xls", call.=FALSE)
+}
+
+# Definir archivo de salida si no se especifica
+output_file <- opt$options$output
+if (is.null(output_file)) {
+    output_file <- sub("\\.xlsx?$", ".csv", input_file, ignore.case = TRUE)
+}
+
+# Leer hoja
+sheet_to_read <- opt$options$sheet
+data <- read_excel(input_file, sheet = sheet_to_read)
+
+# Escribir CSV
+write.csv(data, file = output_file,
+          quote = FALSE, na = "", row.names = FALSE)
+
+
+## Local Variables:
+## mode: R
+## ispell-local-dictionary: "spanish"
+## End:
