@@ -15,7 +15,9 @@ all-deps := \
 	$(local-bin-dir)/brew-update \
 	$(local-bin-dir)/topdf \
 	$(local-bin-dir)/fix-rstudio.sh \
-	$(local-bin-dir)/xlsx2csv
+	$(local-bin-dir)/xlsx2csv \
+	$(local-bin-dir)/gretlcli \
+	$(local-bin-dir)/emacs-server
 
 all: $(all-deps)
 
