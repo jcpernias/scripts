@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+
+import argparse
+import subprocess
+import sys
+
+def run_command(action):
+    plist = "/Users/jose/Library/LaunchAgents/gnu.emacs.daemon.plist"
+    if action == "load":
+        shell_command = ["launchctl", "load", "-w", plist]
+    elif action == "kill":
+        shell_command = ["emacsclient", "-e", "(kill-emacs)"]
+    elif action == "unload":
+        shell_command = ["launchctl", "unload", "-w", plist]
+    else:
+        print("Unknown action.")
+        sys.exit(1)
+
+    try:
+        result = subprocess.run(shell_command)
+        # result = subprocess.run(shell_command, shell=True, check=True,
+        #                         stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        #                         text=True)
+        # print(result.stdout)
+    except subprocess.CalledProcessError as e:
+        print(f"Error: {e.stderr}")
+        sys.exit(e.returncode)
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Controls the emacs server."
+    )
+    parser.add_argument(
+        "action",
+        choices=["load", "kill", "unload"],
+        help="Action to perform on the server."
+    )
+
+    args = parser.parse_args()
+    run_command(args.action)
+
+if __name__ == "__main__":
+    main()
+
+
+# Local Variables:
+# mode: python
+# End:
