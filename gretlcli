@@ -1,0 +1,32 @@
+#!/bin/sh
+
+# get this script's directory
+BINDIR="/Applications/Gretl.app/Contents/Resources/bin"
+TOP="$BINDIR"/..
+
+export GRETL_HOME="$TOP"/share/gretl/
+
+export PANGO_SYSCONFDIR="$TOP"/etc
+export PANGO_RC_FILE="$TOP"/etc/pango/pangorc
+export PANGO_LIBDIR="$TOP"/lib
+
+export G_FILENAME_ENCODING=UTF-8
+
+# location of gnuplot help file
+export GNUHELP="$TOP"/share/gnuplot/6.0/gnuplot.gih
+# location of PostScript resources
+export GNUPLOT_PS_DIR="$TOP"/share/gnuplot/6.0/PostScript
+
+export "PATH=$BINDIR:$PATH"
+
+# Strip out the argument added by the OS, if any
+if /bin/expr "x$1" : '^x-psn_' > /dev/null; then
+    shift 1
+fi
+
+env DYLD_LIBRARY_PATH="$TOP"/lib  "$BINDIR"/gretlcli "$@"
+
+# Remove session.inp
+if [ -e session.inp ]; then
+    rm session.inp
+fi
